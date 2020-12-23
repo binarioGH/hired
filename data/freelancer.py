@@ -4,6 +4,7 @@ from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.keys import Keys
 from json import loads, dumps
 from codecs import open
+from time import sleep
 
 
 class Freelancer:
@@ -22,6 +23,7 @@ class Freelancer:
 		options.add_argument("--log-level=3");
 		options.add_experimental_option('excludeSwitches', ['enable-logging'])
 		self.driver = webdriver.Chrome(chrome_options=options)
+		self.logged_in = False
 
 
 	def load_data(self, file):
@@ -59,5 +61,21 @@ class Freelancer:
 		self.driver.get("https://www.freelancer.com/login")
 		self.driver.find_element_by_xpath("/html/body/app-root/app-logged-out-shell/app-login-page/fl-container/fl-bit/app-login/app-credentials-form/form/fl-input[1]/fl-bit/fl-bit/input").send_keys(self.data["user"])
 		self.driver.find_element_by_xpath("/html/body/app-root/app-logged-out-shell/app-login-page/fl-container/fl-bit/app-login/app-credentials-form/form/fl-input[2]/fl-bit/fl-bit/input").send_keys(self.data["password"])
+		cu = self.driver.current_url
 		self.driver.find_element_by_xpath("/html/body/app-root/app-logged-out-shell/app-login-page/fl-container/fl-bit/app-login/app-credentials-form/form/app-login-signup-button/fl-button/button").click()
-		
+		for i in range(10):
+			sleep(1)
+			if self.driver.current_url != cu:
+				self.logged_in = True
+				return 0
+
+		self.logged_in = False
+
+
+	def search_job(self, ptype="Project", clean_skills = True):
+		if ptype == "Project":
+			self.driver.get("https://www.freelancer.com/search/projects")
+		else:
+			self.driver.get("https://www.freelancer.com/search/contests")
+		continue_but = self.driver.find_element_by_xpath("/html/body/div[2]/main/section/fl-search/div/div[2]/div/div[2]/ul/li[9]/a")
+		#Cosas que usar despues: search-result-item [jobs]
