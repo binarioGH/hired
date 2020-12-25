@@ -74,7 +74,7 @@ class Freelancer:
 		self.logged_in = False
 
 
-	def search_job(self, ptype="Project", clean_skills = True):
+	def search_job(self, ptype="Project", clean_skills = True, input_skills = True):
 		if ptype == "Project":
 			self.driver.get("https://www.freelancer.com/search/projects")
 		elif ptype == "Contest":
@@ -83,14 +83,22 @@ class Freelancer:
 		else:
 			return -1
 		
-		self.driver.implicitly_wait(10)
+		self.driver.implicitly_wait(5)
 		continue_but = self.driver.find_element_by_xpath("/html/body/div[2]/main/section/fl-search/div/div[2]/div/div[2]/ul/li[9]/a")
 		clear = self.driver.find_element_by_xpath("//*[@id='main']/section/fl-search/div/div[1]/form/ol[2]/fl-projects-filter/li/ul/li[2]/div[2]/button")
 		if clean_skills:
 			self.actions.move_to_element(clear).perform()
 			clear.click()
+			
+		if input_skills:
 			skill_box = self.driver.find_element_by_xpath("/html/body/div[2]/main/section/fl-search/div/div[1]/form/ol[2]/fl-projects-filter/li/ul/li[2]/div[1]/fl-tag-input/div/input")
 			for skill in self.data[ptype]["skills"]:
 				skill_box.send_keys(skill)
 				skill_box.send_keys(Keys.ENTER)
-			print("Skills set")
+
+		jobs = self.driver.find_elements_by_class_name("search-result-item")
+		for job in jobs:
+			print("-"*80)
+			print(job)
+			print(dir(job))
+		
