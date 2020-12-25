@@ -2,6 +2,7 @@
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.keys import Keys
+from selenium.webdriver.common.action_chains import ActionChains
 from json import loads, dumps
 from codecs import open
 from time import sleep
@@ -23,6 +24,7 @@ class Freelancer:
 		options.add_argument("--log-level=3");
 		options.add_experimental_option('excludeSwitches', ['enable-logging'])
 		self.driver = webdriver.Chrome(chrome_options=options)
+		self.actions = ActionChains(self.driver)
 		self.logged_in = False
 
 
@@ -75,7 +77,20 @@ class Freelancer:
 	def search_job(self, ptype="Project", clean_skills = True):
 		if ptype == "Project":
 			self.driver.get("https://www.freelancer.com/search/projects")
-		else:
+		elif ptype == "Contest":
 			self.driver.get("https://www.freelancer.com/search/contests")
+
+		else:
+			return -1
+		
+		self.driver.implicitly_wait(10)
 		continue_but = self.driver.find_element_by_xpath("/html/body/div[2]/main/section/fl-search/div/div[2]/div/div[2]/ul/li[9]/a")
-		#Cosas que usar despues: search-result-item [jobs]
+		clear = self.driver.find_element_by_xpath("//*[@id='main']/section/fl-search/div/div[1]/form/ol[2]/fl-projects-filter/li/ul/li[2]/div[2]/button")
+		if clean_skills:
+			self.actions.move_to_element(clear).perform()
+			clear.click()
+			skill_box = self.driver.find_element_by_xpath("/html/body/div[2]/main/section/fl-search/div/div[1]/form/ol[2]/fl-projects-filter/li/ul/li[2]/div[1]/fl-tag-input/div/input")
+			for skill in self.data[ptype]["skills"]:
+				skill_box.send_keys(skill)
+				skill_box.send_keys(Keys.ENTER)
+			print("Skills set")
